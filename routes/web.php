@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Livewire\SolicitagastoController;
+use App\Http\Controllers\PurchaseImportController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -118,11 +119,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pdf/solicitud/{id}', [SolicitagastoController::class, 'generarPDFSolicitud'])
         ->name('solicitudes.pdf')
         ->middleware('role_or_permission:gerente');
-
+    Route::get('/inventario/consumo-producto', function () {
+     return view('consumo_producto');
+        })->name('inventario.consumo-producto')->middleware('role_or_permission:gerente|bodega');
     // Ruta para generar PDF de todas las solicitudes (esto depende de tu flujo)
     Route::get('/pdf/solicitudes', [SolicitagastoController::class, 'generarPDFSolicitudes'])
         ->name('solicitudes.pdf.total')
         ->middleware('role_or_permission:gerente');
+    Route::get('/inventario/alertas/pdf', 'PdfAlertasAbastecimiento@PDFAlertas')
+        ->name('inventario.alertas.pdf')
+        ->middleware('role_or_permission:gerente|bodega');
+    Route::prefix('compras/captura')->middleware('role_or_permission:gerente|bodega')->group(function () {
+        Route::get('/', [PurchaseImportController::class, 'index'])->name('purchase-import.index');
+        Route::post('/upload', [PurchaseImportController::class, 'upload'])->name('purchase-import.upload');
+        Route::get('/{id}/review', [PurchaseImportController::class, 'review'])->name('purchase-import.review');
+        Route::post('/{id}/confirm', [PurchaseImportController::class, 'confirm'])->name('purchase-import.confirm');
+    });
     Route::get('/inventario/alertas', function () {
     return view('alertas_inteligentes');
     })->name('inventario.alertas');

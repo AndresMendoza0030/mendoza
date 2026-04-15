@@ -18,6 +18,7 @@
   'perfiles-controller' => 'App\\Http\\Livewire\\PerfilesController',
   'permisos-controller' => 'App\\Http\\Livewire\\PermisosController',
   'productclassinvoices-controller' => 'App\\Http\\Livewire\\ProductclassinvoicesController',
+  'producto-consumo-controller' => 'App\\Http\\Livewire\\ProductoConsumoController',
   'products-controller' => 'App\\Http\\Livewire\\ProductsController',
   'proveedor-controller' => 'App\\Http\\Livewire\\ProveedorController',
   'salida-devolucion-controller' => 'App\\Http\\Livewire\\SalidaDevolucionController',

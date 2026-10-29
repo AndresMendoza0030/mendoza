@@ -1,0 +1,61 @@
+name: Workspace inventory adapter
+
+on:
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/WorkspaceInventoryController.php'
+      - 'app/Http/Middleware/WorkspaceInventory*.php'
+      - 'app/Http/Kernel.php'
+      - 'app/Services/WorkspaceInventoryAccess.php'
+      - 'config/workspace_inventory.php'
+      - 'routes/api.php'
+      - 'tests/Feature/WorkspaceInventoryTest.php'
+      - 'composer.json'
+      - 'composer.lock'
+      - '.github/workflows/workspace-inventory.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  adapter:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:a2tra2tra2tra2tra2tra2tra2tra2tra2tra2tra2s=
+      CACHE_DRIVER: array
+      SESSION_DRIVER: array
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          # Compatibility gate for the existing Laravel 7 lockfile, not an upgrade.
+          php-version: '7.4'
+          extensions: mbstring, dom, fileinfo, gd, zip, pdo_sqlite, sqlite3, xml, bcmath, curl
+          coverage: none
+          tools: composer:v2
+      - name: Remove generated framework caches before bootstrap
+        run: |
+          rm -f bootstrap/cache/config.php bootstrap/cache/packages.php bootstrap/cache/services.php
+          rm -f bootstrap/cache/routes.php bootstrap/cache/routes-v7.php bootstrap/cache/livewire-components.php
+      - name: Install the existing locked dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Lint adapter and integration points
+        run: |
+          php -l app/Http/Controllers/WorkspaceInventoryController.php
+          php -l app/Http/Middleware/WorkspaceInventoryGateway.php
+          php -l app/Http/Middleware/WorkspaceInventoryWebAccess.php
+          php -l app/Http/Kernel.php
+          php -l app/Services/WorkspaceInventoryAccess.php
+          php -l config/workspace_inventory.php
+          php -l routes/api.php
+          php -l tests/Feature/WorkspaceInventoryTest.php
+      - name: Exercise isolated fixtures, access decisions and direct sessions
+        run: vendor/bin/phpunit tests/Feature/WorkspaceInventoryTest.php
+

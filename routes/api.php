@@ -17,3 +17,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// Read-only server-to-server adapter. The existing /api/user route is unchanged.
+Route::prefix('workspace-inventory')->middleware('workspace.inventory')->group(function () {
+    Route::get('bootstrap', 'WorkspaceInventoryController@bootstrap');
+    Route::get('products', 'WorkspaceInventoryController@products');
+    Route::get('stocks', 'WorkspaceInventoryController@stocks');
+    Route::get('movements', 'WorkspaceInventoryController@movements');
+    Route::get('requests', 'WorkspaceInventoryController@requests');
+});

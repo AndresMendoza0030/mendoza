@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\WorkspaceInventoryAccess;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +15,16 @@ class WorkspaceInventoryController extends Controller
     public function __construct(WorkspaceInventoryAccess $access)
     {
         $this->access = $access;
+    }
+
+    public function callAction($method, $parameters)
+    {
+        try {
+            return parent::callAction($method, $parameters);
+        } catch (QueryException $exception) {
+            // Routing Pipeline renders action exceptions before outer middleware sees them.
+            $this->access->fail(503, 'inventory_data_unavailable', 'No se pudo consultar el inventario.');
+        }
     }
 
     public function bootstrap(Request $request)
